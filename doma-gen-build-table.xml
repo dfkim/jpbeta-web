@@ -3,10 +3,10 @@
 
 	<property name="javaDestDir" value="src/main/java" />
 	<property name="sqlDestDir" value="src/main/resources" />
-	<property name="dialectName" value="mssql" />
-	<property name="driverClassName" value="com.microsoft.sqlserver.jdbc.SQLServerDriver" />
-	<property name="url" value="jdbc:sqlserver://localhost:1434;databaseName=DEMO" />
-	<property name="user" value="" />
+	<property name="dialectName" value="postgres" />
+	<property name="driverClassName" value="org.postgresql.Driver" />
+	<property name="url" value="jdbc:postgresql:postgres" />
+	<property name="user" value="postgres" />
 	<property name="password" value="" />
 	<property name="entityPackageName" value="com.jpbeta.dbcommon.entity" />
 	<property name="daoPackageName" value="com.jpbeta.dbcommon.dao.table" />
