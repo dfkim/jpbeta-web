@@ -5,22 +5,158 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <title>Entry</title>
+<link th:href="@{/webjars/bootstrap/4.0.0-2/css/bootstrap.min.css}" rel="stylesheet" />
+<script th:src="@{/webjars/jquery/3.3.1-1/jquery.min.js}"></script>
+<script th:src="@{/webjars/bootstrap/4.0.0-2/js/bootstrap.min.js}"></script>
 </head>
 <body>
-  <h1>Entry </h1>
-  <form action="/customer/" id="customerForm" th:object="${customerForm}"  method="post">
-    <table width="400" border="1">
-      <tr>
-        <th align="center" width="40%"><label for="serviceName">サービス名&nbsp;&nbsp;&nbsp;</label></th>
-        <th align="right" style="width: 60%;"><input type="text" id="serviceName"  th:value="*{serviceName}" name="serviceName" /></th>
-      </tr>
-      <tr>
-      </tr>
-    </table>
-    <br /> <br />
-    <div class="reset">
-      <input type="submit" name="entryConf" value="登録" style="width: 20%;" />
+  <div class="container-fluid">
+    <div class="row flex-xl-nowrap">
+      <main class="col-12 col-md-9 col-xl-8 py-md-3 pl-md-5 bd-content" role="main">
+      <div style="padding: 1.5rem; margin-right: 0; margin-left: 0; border-width: .2rem; position: relative; margin: 1rem -15px 0; border: solid #f7f7f9;">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item active" aria-current="page">Entry</li>
+          </ol>
+        </nav>
+        <form action="/customer/" id="customerForm" th:object="${customerForm}" method="post">
+          <div class="form-group row">
+            <label for="serviceName" class="col-sm-2 col-form-label">サービス</label>
+            <div class="col-sm-10">
+              <input type="text" id="serviceName" th:value="*{serviceName}" name="serviceName" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-md-2">
+              <label for="inputZip">郵便番号</label> <input type="text" class="form-control" id="inputZip" />
+            </div>
+            <div class="form-group col-md-4">
+              <label for="inputState">都道府県</label> <select id="inputState" class="form-control">
+                <option selected="selected">Choose...</option>
+                <option>...</option>
+              </select>
+            </div>
+            <div class="form-group col-md-6">
+              <label for="inputCity">City</label> <input type="text" class="form-control" id="inputCity" />
+            </div>
+          </div>
+          <input type="submit" name="entryConf" value="登録" class="btn btn-primary" />
+        </form>
+      </div>
+      </main>
     </div>
-  </form>
+  </div>
+  <script>
+      (function($) {
+        $(".postCdEmpty").alert("close");
+        $(document).on("click", "#inputZip", function() {
+          $("#postCd").val("");
+          $("#ajax-postal-table").children().remove();// 以前の検索結果を削除
+          $("#zipModalBtn").click();
+        });
+        $(document).on("click", ".doSearchPostCd", function() {
+          var postCd = $("#postCd").val();
+
+          if (postCd == "") {
+            alert("郵便番号を入力してください。");
+            return;
+          }
+          var ajaxUrl = "/ajax/searchPostCd/doSearchAjax";
+          var params = {
+            'postCd' : postCd
+          }
+          $.ajax({
+            method : "POST",
+            url : ajaxUrl,
+            data : params,
+            beforeSend : function() {
+              $("#ajax-postal-table").children().remove();// 以前の検索結果を削除
+            },
+            success : function(result) {
+              $("#ajax-postal-table").children().remove();// 以前の検索結果を削除
+              var list = $.parseJSON(result);
+              $.each(list, function(k, val) {
+
+                var tr = $("<tr></tr>").attr({
+                  "data-post-cd" : val.postCd,
+                  "data-todofuken-name" : val.kenName,
+                  "data-city-name" : val.cityName,
+                  "data-city-area-name" : val.cityAreaName,
+                  "data-count" : k
+                });
+
+                var td = $("<td></td>").attr({});
+
+                var div = $("<div></div>").attr({
+                  "class" : "form-check"
+                });
+
+                var radio = $('<input type="radio" />').attr({
+                  "name" : "addr",
+                  "class" : "form-check-input",
+                  "id" : "addr" + k
+                });
+                var label = $("<label></label>").attr({
+                  "class" : "form-check-label",
+                  "for" : "addr" + k
+                });
+                var po1 = val.postCd.substring(0, 3);
+                var po2 = val.postCd.substring(val.postCd.length - 4);
+                var span = $("<span></span>").append(po1 + "-" + po2 + "　" + val.kenName + " " + val.cityName + " " + val.cityAreaName);
+                // 郵便番号
+
+                label.append(span);
+                div.append([ radio, label ]);
+                td.append(div);
+
+                tr.append(td);
+
+                // 検索結果の１レコードを表に追加
+                $("#ajax-postal-table").append(tr);
+
+              });
+            },
+            complete : function() {
+            }
+          });
+        });
+
+        $(document).on("click", ".selectPostCd", function() {
+          var addr = $("input[name='addr']:checked").val();
+          if (addr == "") {
+            alert("住所を詮索してください。");
+            return;
+          }
+        });
+
+      })(jQuery);
+    </script>
+  <button type="button" class="btn btn-primary" id="zipModalBtn" style="display: none;" data-toggle="modal" data-target="#exampleModal">Launch demo modal</button>
+  <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">住所検索</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-inline">
+            <div class="form-group mb-2">
+              <label for="postCd" class="sr-only">郵便番号:</label> <input type="text" class="form-control" id="postCd" value="" placeholder="郵便番号" />
+            </div>
+            <button type="submit" class="btn btn-primary mb-2 doSearchPostCd">検索</button>
+            <table class="table" id="ajax-postal-table">
+            </table>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">閉じる</button>
+          <button type="button" class="btn btn-primary selectPostCd">選択</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
